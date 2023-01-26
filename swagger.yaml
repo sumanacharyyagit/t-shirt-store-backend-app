@@ -1,0 +1,58 @@
+openapi: 3.0.0
+info:
+  title: T-Shirt Store APIs
+  description: T-Shirt Store Docs for APIs - Suman Acharyya.
+  version: 1.1.0
+  contact:
+    email: suman@suman-dev.in
+    url: "https://suman-dev.in"
+
+# servers:
+#   - url: "https://localhost:8080/api/v1"
+#     description: "for localHost - secure"
+#   - url: "http://localhost:8080/api/v1"
+#     description: "for localHost"
+
+servers:
+  - url: "{protocol}://localhost:8080/api/{version}"
+    description: "for localHost"
+    variables:
+      version:
+        default: v1
+        enum:
+          - v1
+          - v2
+      protocol:
+        default: http
+        enum:
+          - http
+          - https
+
+components:
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: token
+    BearerAuth:
+      type: http
+      scheme: bearer
+
+paths:
+  /dummy:
+    get:
+      tags:
+        - Home
+      summary: returns a greet!
+      responses:
+        200:
+          description: All Good - Success
+          content:
+            application/json:
+              schema:
+                type: string
+                example: "myString"
+        400:
+          description: Bad Request - Failure
+        500:
+          description: Internal Server Error - Failure
