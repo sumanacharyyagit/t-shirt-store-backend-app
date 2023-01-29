@@ -3,6 +3,8 @@ const BigPromise = require("../middlewares/bigPromise");
 const CustomError = require("../utils/customError");
 const cookieToken = require("../utils/cookieToken");
 const cloudinary = require("cloudinary");
+const emailHandler = require("../utils/emailHelper");
+const crypto = require("crypto");
 
 exports.signUp = BigPromise(async (req, res, next) => {
     if (!req.files) {
@@ -72,5 +74,89 @@ exports.logOut = BigPromise(async (req, res, next) => {
     res.status(200).json({
         success: true,
         message: "Successfully logged out!",
+    });
+});
+
+exports.forgotPassword = BigPromise(async (req, res, next) => {
+    const { email } = req.body;
+    const user = await User.findOne({ email });
+
+    // Check the user if exist or not
+    if (!user) {
+        return next(new CustomError("Email is not registered...!", 400));
+    }
+
+    // generate the tokenData for reset password params
+    const forgotToken = user.getForgotPasswordToken();
+
+    // Save the user data
+    await user.save({ validateBeforeSave: false }); // Without validating the data before save in DB
+
+    // crafting the complete email message body
+    const myUrl = `${req.protocol}://${req.get(
+        "host"
+    )}/api/v1/password/reset/${forgotToken}`;
+    const message = `Hello ${user.name}, \n \n \n Copy and paste this link in your browser to reset password and hit enter \n \n ${myUrl}`;
+
+    try {
+        // sending the Email payload
+        await emailHandler({
+            to: user.email,
+            subject: `T-Shirt Store Password Reset`,
+            text: message,
+        });
+
+        res.status(200).json({
+            success: true,
+            message: "Email sent successfully",
+        });
+    } catch (err) {
+        // Clear the token and Expiry
+        user.forgotPasswordToken = undefined;
+        user.forgotPasswordExpiry = undefined;
+        await user.save({ validateBeforeSave: false }); // Without validating the data before save in DB
+        return next(new CustomError(err.message, 500));
+    }
+});
+
+exports.resetPassword = BigPromise(async (req, res, next) => {
+    const token = req.params.token;
+
+    const encrypToken = crypto.createHash("sha256").update(token).digest("hex");
+
+    const user = await User.findOne({
+        forgotPasswordToken: encrypToken,
+        forgotPasswordExpiry: { $gt: Date.now() },
+    });
+
+    if (!user) {
+        return next(new CustomError("Token is invalid or expired", 400));
+    }
+
+    if (req.body.password !== req.body.confirmPassword) {
+        return next(
+            new CustomError(
+                "Password and confirm password are not matched!",
+                400
+            )
+        );
+    }
+
+    user.password = req.body.password;
+
+    user.forgotPasswordToken = undefined;
+    user.forgotPasswordExpiry = undefined;
+    await user.save();
+
+    // Send a JSON Response or Send Token User Data
+    cookieToken(user, res);
+});
+
+exports.getLoggedinUserDetails = BigPromise(async (req, res, next) => {
+    const { _id } = req.user;
+    const user = await User.findById(_id);
+    res.status(200).json({
+        success: true,
+        user,
     });
 });
