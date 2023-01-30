@@ -5,6 +5,7 @@ const cookieToken = require("../utils/cookieToken");
 const cloudinary = require("cloudinary");
 const emailHandler = require("../utils/emailHelper");
 const crypto = require("crypto");
+const user = require("../models/user");
 
 exports.signUp = BigPromise(async (req, res, next) => {
     if (!req.files) {
@@ -158,5 +159,174 @@ exports.getLoggedinUserDetails = BigPromise(async (req, res, next) => {
     res.status(200).json({
         success: true,
         user,
+    });
+});
+
+exports.changePasswordHandler = BigPromise(async (req, res, next) => {
+    const { _id } = req.user;
+    const user = await User.findById(_id).select("+password");
+
+    const isValidOldPassword = await user.isPasswordValidated(
+        req.body.oldPassword
+    );
+    if (!isValidOldPassword) {
+        return next(new CustomError("Old Password is Incorrect!", 400));
+    }
+
+    if (req.body.password !== req.body.confirmPassword) {
+        return next(
+            new CustomError("Password and Confirm Password not matched!", 400)
+        );
+    }
+
+    user.password = req.body.password;
+    await user.save();
+
+    cookieToken(user, res);
+});
+
+exports.updateUserDetails = BigPromise(async (req, res, next) => {
+    // Check for email and name in requestBody
+    if (!(req.body.name && req.body.email)) {
+        return next(
+            new CustomError("Email and Name is required to update", 400)
+        );
+    }
+
+    const { _id } = req.user;
+
+    let newData = {
+        name: req.body.name,
+        email: req.body.email,
+    };
+
+    if (req?.files?.photo) {
+        const user = await User.findById(_id);
+
+        const photoId = user.photo.id;
+        const resp = cloudinary.v2.uploader.destroy(photoId);
+
+        const file = req.files.photo;
+
+        const result = await cloudinary.v2.uploader.upload(file.tempFilePath, {
+            folder: "users",
+            width: 150,
+            crop: "scale",
+        });
+        newData.photo = {
+            id: result.public_id,
+            secure_url: result.secure_url,
+        };
+    }
+
+    const user = await User.findByIdAndUpdate(_id, newData, {
+        new: true,
+        runValidators: true,
+        useFindAndModify: false,
+    });
+
+    res.status(200).json({
+        success: true,
+        user,
+    });
+});
+
+exports.adminAllUsers = BigPromise(async (req, res, next) => {
+    const users = await User.find({});
+
+    res.status(200).json({
+        success: true,
+        users,
+    });
+});
+
+exports.adminGetSingleUsers = BigPromise(async (req, res, next) => {
+    const userId = req.params.id;
+    const user = await User.findById(userId);
+
+    if (!user) {
+        next(new CustomError("User not found", 400));
+    }
+
+    res.status(200).json({
+        success: true,
+        user,
+    });
+});
+
+exports.adminUpdateSingleUserDetails = BigPromise(async (req, res, next) => {
+    // Check for email and name in requestBody
+    console.log(req.body);
+    if (!(req.body.name && req.body.email && req.body.role)) {
+        return next(
+            new CustomError("Email, Name and Role is required to update", 400)
+        );
+    }
+
+    const id = req.params.id;
+
+    let newData = {
+        name: req.body.name,
+        email: req.body.email,
+        role: req.body.role,
+    };
+
+    // if (req?.files?.photo) {
+    //     const user = await User.findById(_id);
+
+    //     const photoId = user.photo.id;
+    //     const resp = cloudinary.v2.uploader.destroy(photoId);
+
+    //     const file = req.files.photo;
+
+    //     const result = await cloudinary.v2.uploader.upload(file.tempFilePath, {
+    //         folder: "users",
+    //         width: 150,
+    //         crop: "scale",
+    //     });
+    //     newData.photo = {
+    //         id: result.public_id,
+    //         secure_url: result.secure_url,
+    //     };
+    // }
+
+    const user = await User.findByIdAndUpdate(id, newData, {
+        new: true,
+        runValidators: true,
+        useFindAndModify: false,
+    });
+
+    res.status(200).json({
+        success: true,
+        user,
+    });
+});
+
+exports.adminDeleteSingleUserDetails = BigPromise(async (req, res, next) => {
+    const id = req.params.id;
+    const user = await User.findById(id);
+
+    if (!user) {
+        return next(new CustomError("User not found", 401));
+    }
+
+    console.log(user);
+
+    const photoId = user.photo.id;
+    await cloudinary.v2.uploader.destroy(photoId);
+
+    await user.remove();
+
+    res.status(200).json({
+        success: true,
+    });
+});
+
+exports.managerAllUsers = BigPromise(async (req, res, next) => {
+    const users = await User.find({ role: "user" });
+
+    res.status(200).json({
+        success: true,
+        users,
     });
 });

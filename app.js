@@ -6,6 +6,7 @@ const morgan = require("morgan");
 const fileUpload = require("express-fileupload");
 const homeRoute = require("./routes/home");
 const userRoute = require("./routes/user");
+const productRoute = require("./routes/product");
 
 // Swagger Documentation
 const swaggerUi = require("swagger-ui-express");
@@ -35,6 +36,7 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 // Routes
 app.use("/api/v1", homeRoute);
+app.use("/api/v1", productRoute);
 app.use("/api/v1", userRoute);
 
 app.get("/signuptests", (req, res) => {
