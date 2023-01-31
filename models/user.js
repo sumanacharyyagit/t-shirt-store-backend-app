@@ -4,49 +4,54 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
 
-const userSchema = new mongoose.Schema({
-    name: {
-        type: String,
-        required: [true, "Please provide a name"],
-        maxLength: [40, "Name should under 40 characters"],
-    },
-    email: {
-        type: String,
-        required: [true, "Please provide an email"],
-        // validate: [validator.isEmail, "Please enter a valid email"],
-        unique: true,
-    },
-    password: {
-        type: String,
-        required: [true, "Please provide password"],
-        minlength: [8, "Password must be at least 8 characters"],
-        select: false,
-    },
-    role: {
-        type: String,
-        default: "user",
-    },
-    photo: {
-        id: {
+const userSchema = new mongoose.Schema(
+    {
+        name: {
             type: String,
-            required: true,
+            required: [true, "Please provide a name"],
+            maxLength: [40, "Name should under 40 characters"],
         },
-        secure_url: {
+        email: {
             type: String,
-            required: true,
+            required: [true, "Please provide an email"],
+            // validate: [validator.isEmail, "Please enter a valid email"],
+            unique: true,
+        },
+        password: {
+            type: String,
+            required: [true, "Please provide password"],
+            minlength: [8, "Password must be at least 8 characters"],
+            select: false,
+        },
+        role: {
+            type: String,
+            default: "user",
+        },
+        photo: {
+            id: {
+                type: String,
+                required: true,
+            },
+            secure_url: {
+                type: String,
+                required: true,
+            },
+        },
+        forgotPasswordToken: {
+            type: String,
+        },
+        forgotPasswordExpiry: {
+            type: Date,
+        },
+        craetedAt: {
+            type: Date,
+            default: Date.now,
         },
     },
-    forgotPasswordToken: {
-        type: String,
-    },
-    forgotPasswordExpiry: {
-        type: Date,
-    },
-    craetedAt: {
-        type: Date,
-        default: Date.now,
-    },
-});
+    {
+        timestamps: true,
+    }
+);
 
 // Excrypt the password before Save --- Hooks
 userSchema.pre("save", async function (next) {

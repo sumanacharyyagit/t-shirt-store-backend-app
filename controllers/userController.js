@@ -5,7 +5,6 @@ const cookieToken = require("../utils/cookieToken");
 const cloudinary = require("cloudinary");
 const emailHandler = require("../utils/emailHelper");
 const crypto = require("crypto");
-const user = require("../models/user");
 
 exports.signUp = BigPromise(async (req, res, next) => {
     if (!req.files) {
