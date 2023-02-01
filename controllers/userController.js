@@ -22,7 +22,7 @@ exports.signUp = BigPromise(async (req, res, next) => {
     let file = req.files.photo;
 
     const result = await cloudinary.v2.uploader.upload(file.tempFilePath, {
-        folder: "users",
+        folder: process.env.CLOUDINARY_FOLDER_USERS,
         width: 150,
         crop: "scale",
     });
@@ -208,7 +208,7 @@ exports.updateUserDetails = BigPromise(async (req, res, next) => {
         const file = req.files.photo;
 
         const result = await cloudinary.v2.uploader.upload(file.tempFilePath, {
-            folder: "users",
+            folder: process.env.CLOUDINARY_FOLDER_USERS,
             width: 150,
             crop: "scale",
         });
@@ -279,8 +279,8 @@ exports.adminUpdateSingleUserDetails = BigPromise(async (req, res, next) => {
     //     const file = req.files.photo;
 
     //     const result = await cloudinary.v2.uploader.upload(file.tempFilePath, {
-    //         folder: "users",
-    //         width: 150,
+    // folder: process.env.CLOUDINARY_FOLDER_USERS,
+    // width: 150,
     //         crop: "scale",
     //     });
     //     newData.photo = {
