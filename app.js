@@ -7,6 +7,8 @@ const fileUpload = require("express-fileupload");
 const homeRoute = require("./routes/home");
 const userRoute = require("./routes/user");
 const productRoute = require("./routes/product");
+const paymentRoutes = require("./routes/payment");
+const orderRoutes = require("./routes/order");
 
 // Swagger Documentation
 const swaggerUi = require("swagger-ui-express");
@@ -22,10 +24,10 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(
-    fileUpload({
-        useTempFiles: true,
-        tempFileDir: "/tmp/",
-    })
+  fileUpload({
+    useTempFiles: true,
+    tempFileDir: "/tmp/",
+  })
 );
 
 // middleware setup the logger with custom token formats
@@ -38,9 +40,11 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 app.use("/api/v1", homeRoute);
 app.use("/api/v1", productRoute);
 app.use("/api/v1", userRoute);
+app.use("/api/v1", paymentRoutes);
+app.use("/api/v1", orderRoutes);
 
 app.get("/signuptests", (req, res) => {
-    res.render("signupTest");
+  res.render("signupTest");
 });
 
 module.exports = app;
