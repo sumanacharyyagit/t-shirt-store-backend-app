@@ -38,7 +38,7 @@ const productSchema = new mongoose.Schema(
       enum: {
         values: ["shortSleeves", "longSleeves", "sweatShirts", "hoodies"],
         message:
-          "Please provide product category only from --> short-sleeves, long-sleeves, sweat-shirts and hoodies",
+          "Please provide product category only from --> shortSleeves, longSleeves, sweatShirts and hoodies",
       },
     },
     brand: {
@@ -83,10 +83,10 @@ const productSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
-    createdAt: {
-      type: Date,
-      default: Date.now,
-    },
+    // createdAt: {
+    //   type: Date,
+    //   default: Date.now,
+    // },
   },
   {
     timestamps: true,

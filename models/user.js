@@ -43,10 +43,10 @@ const userSchema = new mongoose.Schema(
     forgotPasswordExpiry: {
       type: Date,
     },
-    craetedAt: {
-      type: Date,
-      default: Date.now,
-    },
+    // craetedAt: {
+    //   type: Date,
+    //   default: Date.now,
+    // },
   },
   {
     timestamps: true,
