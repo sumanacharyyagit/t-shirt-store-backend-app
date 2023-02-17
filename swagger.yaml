@@ -8,13 +8,13 @@ info:
     url: "https://suman-dev.in"
 
 # servers:
-#   - url: "https://t-shirt-store-backend-app-production.up.railway.app/api/v1"
+#   - url: "https://adventurous-foal-costume.cyclic.app/api/v1"
 #     description: "for remoteHost - secure"
 #   - url: "http://localhost:8080/api/v1"
 #     description: "for localHost"
 
 servers:
-  - url: "{protocol}://t-shirt-store-backend-app-production.up.railway.app/api/{version}"
+  - url: "{protocol}://adventurous-foal-costume.cyclic.app/api/{version}"
     description: "for remote host"
     variables:
       version:
